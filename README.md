@@ -15,3 +15,10 @@ export ROCKET_DATABASES="{ personal_dashboard = { url = \"$DATABASE_URL\" } }"
 ```
 
 ## Frontend (todo)
+
+### Dependencies
+* Node
+
+### Setup
+* `yarn install && yarn build`
+* Open `frontend/index.html
