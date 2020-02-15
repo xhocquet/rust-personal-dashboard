@@ -1,0 +1,14 @@
+.navbar {
+  padding: 1rem;
+}
+
+.navshadow { box-shadow: 2px 2px 2px lightgrey; }
+
+.footer {
+  bottom: 0;
+  height: 36px;
+  left: 0;
+  position: fixed;
+  text-align: center;
+  width: 100%;
+}

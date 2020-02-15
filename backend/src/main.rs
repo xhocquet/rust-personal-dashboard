@@ -15,6 +15,7 @@ extern crate serde_derive;
 pub mod models;
 pub mod routes;
 pub mod schema;
+pub mod cors;
 
 #[database("personal_dashboard")]
 pub struct DbConn(diesel::PgConnection);
@@ -26,5 +27,6 @@ fn main() {
         routes::create_note,
       ])
       .attach(DbConn::fairing())
+      .attach(cors::CorsFairing)
       .launch();
 }
