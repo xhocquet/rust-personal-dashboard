@@ -20,6 +20,9 @@ module.exports = {
     maxEntrypointSize: 400000, // int (in bytes)
   },
   devtool: "inline-source-map", // enum
+  devServer: {
+    contentBase: './dist',
+  },
   context: __dirname, // string (absolute path!)
   target: "web", // enum
   module: {

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'preact/hooks';
 import Note from './note'
 
 export default function NotesList() {
-  const URL = 'http://localhost:8000/'
+  const URL = 'http://localhost:8000/api/v1/notes'
   const [notes, setNotes] = useState([]);
 
   useEffect(() => {
