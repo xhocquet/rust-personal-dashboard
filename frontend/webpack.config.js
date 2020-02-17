@@ -1,18 +1,15 @@
 const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
   mode: "development", // "production" | "development" | "none"
   entry: "./src/index", // string | object | array
   output: {
-    path: path.resolve(__dirname, "dist"), // string
-    // the target directory for all output files
-    // must be an absolute path (use the Node.js path module)
-    filename: "bundle.js", // string
-    // the filename template for entry chunks
-    publicPath: "/assets/", // string
-    // the url to the output directory resolved relative to the HTML page
+    path: path.resolve(__dirname, "../backend/static"), // string
+    filename: 'bundle.js',
+    publicPath: "/static", // string
     libraryTarget: "umd", // universal module definition
-    // the type of the exported library
   },
   performance: {
     hints: "warning", // enum
@@ -25,6 +22,13 @@ module.exports = {
   },
   context: __dirname, // string (absolute path!)
   target: "web", // enum
+  plugins: [
+    new BundleAnalyzerPlugin(),
+    new HtmlWebpackPlugin({
+      title: 'Personal Dashboard',
+      filename: 'index.html'
+    })
+  ],
   module: {
     rules: [ // loaders
       {
@@ -42,11 +46,11 @@ module.exports = {
         use: ['style-loader', 'css-loader'],
       },
       {
-        test: /\.(woff|woff2|eot|ttf|otf)$/,
+        test: /\.(png|svg|jpg|gif|ico|woff|woff2|eot|ttf|otf)$/,
         use: [
           'file-loader',
         ],
-      },
+      }
     ]
   }
 }

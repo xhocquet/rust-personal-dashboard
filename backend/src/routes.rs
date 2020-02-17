@@ -1,6 +1,5 @@
 pub mod api {
   use diesel::{self, prelude::*};
-
   use rocket_contrib::json::Json;
 
   use crate::models::{InsertableNote, Note};
@@ -35,17 +34,15 @@ pub mod api {
   }
 }
 
-use rocket_contrib::templates::Template;
-use crate::DbConn;
-
-#[derive(Serialize)]
-struct TemplateContext {
-  parent: &'static str,
-}
+use std::io;
+use rocket::response::{NamedFile};
 
 #[get("/")]
-pub fn index(_conn: DbConn) -> Template {
-  Template::render("index", &TemplateContext {
-    parent: "layout",
-  })
+pub fn index() -> io::Result<NamedFile> {
+    NamedFile::open("static/index.html")
+}
+
+#[get("/favicon.ico")]
+pub fn favicon() -> io::Result<NamedFile> {
+    NamedFile::open("static/favicon.ico")
 }

@@ -1,19 +1,19 @@
-import { Fragment, render, h } from 'preact'
+import { Fragment, h } from 'preact'
 
 import './main_layout.css'
 
 export default function MainLayout(props) {
   return (
     <Fragment>
-      <header class="navbar navshadow">
-        <section class="navbar-primary">
-          <a class="navbar-brand">Personal Dash</a>
+      <header className="navbar navshadow">
+        <section className="navbar-primary">
+          <a className="navbar-brand">Personal Dash</a>
         </section>
       </header>
-      <div class="container centered">
+      <div>
         {props.children}
       </div>
-      <footer class="footer">cc2020 Xavier Hocquet</footer>
+      <footer className="footer">cc2020 Xavier Hocquet</footer>
     </Fragment>
   )
 }

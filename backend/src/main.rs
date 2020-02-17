@@ -18,6 +18,7 @@ pub mod schema;
 pub mod cors;
 
 use rocket_contrib::templates::Template;
+use rocket_contrib::serve::StaticFiles;
 
 #[database("personal_dashboard")]
 pub struct DbConn(diesel::PgConnection);
@@ -26,9 +27,11 @@ fn main() {
     rocket::ignite()
       .mount("/", routes![
         routes::index,
+        routes::favicon,
         routes::api::notes_index,
         routes::api::notes_create,
       ])
+      .mount("/static", StaticFiles::from("static"))
       .attach(DbConn::fairing())
       .attach(cors::CorsFairing)
       .attach(Template::fairing())
