@@ -1,3 +1,7 @@
 #tree-container {
   height: 400px;
 }
+
+svg {
+  border: 1px solid blue;
+}

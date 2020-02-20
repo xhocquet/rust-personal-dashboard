@@ -1,4 +1,8 @@
-import { hierarchy, tree, select, linkHorizontal } from 'd3'
+import { hierarchy, tree } from 'd3-hierarchy'
+import { select } from 'd3-selection'
+import { linkHorizontal } from 'd3-shape'
+import { zoomIdentity, zoom as d3Zoom } from 'd3-zoom'
+import { event as d3Event } from 'd3'
 
 // Get JSON data
 export function setupTree(treeData) {
@@ -19,6 +23,13 @@ export function setupTree(treeData) {
     if (d.x < x0) x0 = d.x;
   });
 
+  const overCircle = (data, i, nodes) => {
+    nodes[i].setAttribute('r', 7)
+  }
+  const outCircle = (data, i, nodes) => {
+    nodes[i].setAttribute('r', 4)
+  }
+
   const svg = select("body").append("svg")
     .attr("viewBox", [0, 0, width, x1 - x0 + root.dx * 2])
     .attr("background-color", "gray")
@@ -28,39 +39,48 @@ export function setupTree(treeData) {
     .attr("font-size", 10)
     .attr("transform", `translate(${root.dy / 3},${root.dx - x0})`);
 
+  // Lines
   const link = g.append("g")
     .attr("fill", "none")
-    .attr("stroke", "#ff0000")
-    .attr("stroke-opacity", 0.4)
-    .attr("stroke-width", 1.5)
+    .attr("stroke", "#f67280")
+    .attr("stroke-width", 3)
     .selectAll("path")
     .data(root.links())
     .join("path")
     .attr("d", linkHorizontal()
-    .x(d => d.y)
-    .y(d => d.x))
+      .x(d => d.y)
+      .y(d => d.x))
 
+  // Children
   const node = g.append("g")
-      .attr("stroke-linejoin", "round")
-      .attr("stroke-width", 3)
-      .selectAll("g")
-      .data(root.descendants())
-      .join("g")
-      .attr("transform", d => `translate(${d.y},${d.x})`)
+    .attr("stroke-linejoin", "round")
+    .attr("stroke-width", 3)
+    .selectAll("g")
+    .data(root.descendants())
+    .join("g")
+    .attr("transform", d => `translate(${d.y},${d.x})`)
 
+  // Circles
   node.append("circle")
-      .attr("fill", d => d.children ? "#555" : "#999")
-      .attr("r", 2.5)
+    .attr("fill", "#6c567b")
+    .attr("r", 4)
+    .on("mouseover", overCircle)
+    .on("mouseout", outCircle)
 
   node.append("text")
-      .attr("font-size", "14px")
-      .attr("dy", "0.31em")
-      .attr("x", d => d.children ? -6 : 6)
-      .attr("text-anchor", d => d.children ? "end" : "start")
-      .text(d => d.data.title)
-      .clone(true).lower()
-      .attr("fill", "black")
+    .attr("font-size", "14px")
+    .attr("dy", "0.31em")
+    .attr("x", d => d.children ? -6 : 6)
+    .attr("text-anchor", d => d.children ? "end" : "start")
+    .text(d => d.data.title)
+    .clone(true).lower()
+    .attr("fill", "black")
 
-  svg.node()
+  const zoomed = () => {
+    g.attr("transform", d3Event.transform);
+  }
+
+  const zoom = d3Zoom().on("zoom", zoomed);
+
+  svg.call(zoom).call(zoom.transform, zoomIdentity)
 }
-

@@ -1,36 +1,31 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin')
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  mode: "development", // "production" | "development" | "none"
-  entry: "./src/index", // string | object | array
+  mode: "development",
+  entry: "./src/index",
   output: {
-    path: path.resolve(__dirname, "../backend/static"), // string
+    path: path.resolve(__dirname, "../backend/static"),
     filename: 'bundle.js',
-    publicPath: "/static", // string
-    libraryTarget: "umd", // universal module definition
+    publicPath: "/static",
+    libraryTarget: "umd",
   },
   performance: {
-    hints: "warning", // enum
-    maxAssetSize: 200000, // int (in bytes),
-    maxEntrypointSize: 400000, // int (in bytes)
+    hints: "warning",
+    maxAssetSize: 200000,
+    maxEntrypointSize: 400000,
   },
-  devtool: "inline-source-map", // enum
-  devServer: {
-    contentBase: './dist',
-  },
-  context: __dirname, // string (absolute path!)
-  target: "web", // enum
+  devtool: "inline-source-map",
+  context: __dirname,
+  target: "web",
   plugins: [
-    new BundleAnalyzerPlugin(),
     new HtmlWebpackPlugin({
       title: 'Personal Dashboard',
       filename: 'index.html'
     })
   ],
   module: {
-    rules: [ // loaders
+    rules: [
       {
         test: /\.m?js$/,
         exclude: /(node_modules|bower_components)/,
@@ -43,14 +38,14 @@ module.exports = {
       },
       {
         test: /\.css$/i,
-        use: ['style-loader', 'css-loader'],
+        use: ['style-loader', 'css-loader']
       },
       {
         test: /\.(png|svg|jpg|gif|ico|woff|woff2|eot|ttf|otf)$/,
         use: [
-          'file-loader',
+          'file-loader'
         ],
       }
-    ]
+    ],
   }
 }
