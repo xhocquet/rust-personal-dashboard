@@ -12,6 +12,12 @@ export default class NotesTree extends Component {
     this.state = { notes: [], timestamp: undefined };
   }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    const { timestamp: nextTimestamp } = nextState
+    const { timestamp: currentTimestamp } = this.state
+    return nextTimestamp === currentTimestamp
+  }
+
   componentDidMount() {
     fetch(`${URL}`)
       .then(res => res.json())
@@ -22,8 +28,6 @@ export default class NotesTree extends Component {
   }
 
   render() {
-    return(
-      <Fragment />
-     )
+    return <div id="svg-container" />
   }
 }

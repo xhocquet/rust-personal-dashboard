@@ -10,9 +10,7 @@ export default function MainLayout(props) {
           <a className="navbar-brand">Personal Dash</a>
         </section>
       </header>
-      <div>
-        {props.children}
-      </div>
+      {props.children}
       <footer className="footer">cc2020 Xavier Hocquet</footer>
     </Fragment>
   )

@@ -1,8 +1,8 @@
-import { hierarchy, tree } from 'd3-hierarchy'
+import { hierarchy, tree as d3Tree } from 'd3-hierarchy'
 import { select } from 'd3-selection'
 import { linkHorizontal } from 'd3-shape'
-import { zoomIdentity, zoom as d3Zoom } from 'd3-zoom'
-import { event as d3Event } from 'd3'
+import { zoomIdentity, zoomTransform, zoom as d3Zoom } from 'd3-zoom'
+import { event as d3Event, create as d3Create } from 'd3'
 
 // Get JSON data
 export function setupTree(treeData) {
@@ -11,17 +11,11 @@ export function setupTree(treeData) {
     children: treeData,
   }
   const width = 954
+  const height = 600
   const data = hierarchy(treeDataWithParent)
-  data.dx = 100;
+  data.dx = 40;
   data.dy = width / (data.height + 1);
-  var root = tree().nodeSize([data.dx, data.dy])(data)
-
-  let x0 = Infinity;
-  let x1 = -x0;
-  root.each(d => {
-    if (d.x > x1) x1 = d.x;
-    if (d.x < x0) x0 = d.x;
-  });
+  var dataTree = d3Tree().nodeSize([data.dx, data.dy])(data)
 
   const overCircle = (data, i, nodes) => {
     nodes[i].setAttribute('r', 7)
@@ -30,33 +24,48 @@ export function setupTree(treeData) {
     nodes[i].setAttribute('r', 4)
   }
 
-  const svg = select("body").append("svg")
-    .attr("viewBox", [0, 0, width, x1 - x0 + root.dx * 2])
+  //
+  // BEGIN SETUP CONTAINER AND ZOOM
+  //
+
+  // Root SVG
+  const svg = select("#svg-container").append("svg")
+    .attr("viewBox", [0, 0, document.getElementById('svg-container').offsetWidth, document.getElementById('svg-container').offsetHeight])
+    .attr("preserveAspectRatio", "xMidYMid meet")
     .attr("background-color", "gray")
 
-  const g = svg.append("g")
+  // Zoom container
+  const zoomContainer = svg.append("g")
     .attr("font-family", "sans-serif")
+    .attr("border", '1px dotted red')
     .attr("font-size", 10)
-    .attr("transform", `translate(${root.dy / 3},${root.dx - x0})`);
+
+  const zoomed = () => zoomContainer.attr("transform", d3Event.transform)
+  const zoom = d3Zoom().on("zoom", zoomed)
+  svg.call(zoom).call(zoom.transform, zoomIdentity.translate(width / 4, height / 2));
+
+  //
+  // END SETUP CONTAINER AND ZOOM
+  //
 
   // Lines
-  const link = g.append("g")
+  const link = zoomContainer.append("g")
     .attr("fill", "none")
     .attr("stroke", "#f67280")
     .attr("stroke-width", 3)
     .selectAll("path")
-    .data(root.links())
+    .data(dataTree.links())
     .join("path")
     .attr("d", linkHorizontal()
       .x(d => d.y)
       .y(d => d.x))
 
   // Children
-  const node = g.append("g")
+  const node = zoomContainer.append("g")
     .attr("stroke-linejoin", "round")
     .attr("stroke-width", 3)
     .selectAll("g")
-    .data(root.descendants())
+    .data(dataTree.descendants())
     .join("g")
     .attr("transform", d => `translate(${d.y},${d.x})`)
 
@@ -75,12 +84,4 @@ export function setupTree(treeData) {
     .text(d => d.data.title)
     .clone(true).lower()
     .attr("fill", "black")
-
-  const zoomed = () => {
-    g.attr("transform", d3Event.transform);
-  }
-
-  const zoom = d3Zoom().on("zoom", zoomed);
-
-  svg.call(zoom).call(zoom.transform, zoomIdentity)
 }
