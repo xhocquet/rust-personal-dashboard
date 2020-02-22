@@ -1,8 +1,8 @@
 import { h, Fragment, Component } from 'preact';
 import { useState, useEffect } from 'preact/hooks';
-import { setupTree } from './tree';
+import Tree from './tree';
 
-import './notes_tree.css';
+import './index.css';
 
 const URL = 'http://localhost:8000/api/v1/notes'
 
@@ -22,8 +22,8 @@ export default class NotesTree extends Component {
     fetch(`${URL}`)
       .then(res => res.json())
       .then(res => {
-        this.setState({notes: res, timestamp: Date.now()})
-        setupTree(res)
+        let tree = new Tree('svg-container', res).setupTree()
+        this.setState({notes: res, timestamp: Date.now(), tree: tree})
       })
   }
 
