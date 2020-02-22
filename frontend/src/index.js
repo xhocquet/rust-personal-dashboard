@@ -1,4 +1,3 @@
-import "preact/debug";
 import 'roboto-fontface/css/roboto/roboto-fontface.css'
 import 'normalize.css/normalize.css'
 import 'spectre.css/dist/spectre.min.css'

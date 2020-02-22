@@ -2,27 +2,27 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  mode: "development",
-  entry: "./src/index",
+  mode: 'development',
+  entry: './src/index',
   output: {
-    path: path.resolve(__dirname, "../backend/static"),
+    path: path.resolve(__dirname, '../backend/static'),
     filename: 'bundle.js',
-    publicPath: "/static",
-    libraryTarget: "umd",
+    publicPath: '/static',
+    libraryTarget: 'umd',
   },
   performance: {
-    hints: "warning",
+    hints: 'warning',
     maxAssetSize: 200000,
     maxEntrypointSize: 400000,
   },
-  devtool: "inline-source-map",
+  devtool: 'inline-source-map',
   context: __dirname,
-  target: "web",
+  target: 'web',
   plugins: [
     new HtmlWebpackPlugin({
       title: 'Personal Dashboard',
-      filename: 'index.html'
-    })
+      filename: 'index.html',
+    }),
   ],
   module: {
     rules: [
@@ -33,19 +33,21 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             presets: ['@babel/preset-env'],
-          }
-        }
+          },
+        },
       },
       {
         test: /\.css$/i,
-        use: ['style-loader', 'css-loader']
+        use: ['style-loader', 'css-loader'],
       },
       {
-        test: /\.(png|svg|jpg|gif|ico|woff|woff2|eot|ttf|otf)$/,
-        use: [
-          'file-loader'
-        ],
-      }
+        test: /\.(png|jpg|gif|ico|woff|woff2|eot|ttf|otf)$/,
+        use: ['file-loader'],
+      },
+      {
+        test: /\.(svg)$/,
+        use: ['raw-loader'],
+      },
     ],
-  }
-}
+  },
+};
