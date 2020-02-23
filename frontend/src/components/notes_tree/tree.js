@@ -8,53 +8,71 @@ import { event as d3Event, create as d3Create } from 'd3';
 import RadialMenu from './radial_menu';
 
 import trashSVG from '../../../assets/trash.svg';
+import plusSVG from '../../../assets/plus.svg';
 
 export default class Tree {
-  constructor(selector, treeData = null) {
+  constructor(selector, createNode) {
     this.selector = selector;
-    this.treeData = treeData;
+    this.createNode = createNode;
+    this.dataTree = null;
+    this.zoomContainer = null;
+    this.radialMenu = null;
     this.width = 954;
     this.height = 600;
-
-    // Menu
-    const data = [
-      { icon: trashSVG, action: 'segment 1', function: this.deleteNode },
-      { icon: trashSVG, action: 'segment 1', function: this.deleteNode },
-      { icon: trashSVG, action: 'segment 1', function: this.deleteNode },
-    ];
-    this.radialMenu = new RadialMenu(data).init();
+    this.linksContainer = null;
+    this.nodesContainer = null;
   }
 
-  onItemClick(node) {
-    this.radialMenu.move(node);
-  }
-
-  deleteNode(node) {
-    const itemId = select(node).datum().data.id
-    alert(`deleting item ${itemId}`)
-  }
-
-  setupTree() {
-    this.setupDataTree();
+  setupTree(data) {
+    this.setupDataTree(data);
     this.setupZoomContainer();
+    this.prepareMenu();
     this.renderLines();
     this.renderItems();
   }
 
-  setupDataTree() {
-    const treeDataWithParent = [{ id: 0 }, ...this.treeData];
+  onItemClick(node) {
+    this.radialMenu.selectNode(node);
+  }
+
+  onNodeCircleOver(item, i, nodes) {
+    nodes[i].setAttribute('fill', '#dd5555');
+  }
+
+  onNodeCircleOut(item, i, nodes) {
+    nodes[i].setAttribute('fill', '#000');
+  }
+
+  addToNode(node) {
+    const parentNoteId = select(node).datum().data.id;
+    this.createNode({
+      note_id: parentNoteId,
+      title: 'API-created',
+      body: '',
+      finished: false,
+    });
+  }
+
+  deleteNode(node) {
+    const itemId = select(node).datum().data.id;
+    alert(`deleting item ${itemId}`);
+  }
+
+  setupDataTree(rawData) {
     const data = stratify()
       .id(d => d.id)
       .parentId(d => {
         if (d.id === 0) return null;
         return d.note_id || 0;
-      })(treeDataWithParent);
+      })([{ id: 0 }, ...rawData]);
     data.dx = 80;
     data.dy = this.width / (data.height + 1);
     this.dataTree = d3Tree().nodeSize([data.dx, data.dy])(data);
   }
 
   setupZoomContainer() {
+    if (this.zoomContainer) return;
+
     const idContainerSelector = `#${this.selector}`;
     const containerElement = document.getElementById(this.selector);
 
@@ -75,51 +93,75 @@ export default class Tree {
     svg.call(zoom).call(zoom.transform, zoomIdentity.translate(this.width / 4, this.height / 2));
   }
 
+  prepareMenu() {
+    if (this.radialMenu) return this.radialMenu.remove();
+
+    const data = [
+      { icon: trashSVG, function: this.deleteNode.bind(this) },
+      { icon: plusSVG, function: this.addToNode.bind(this) },
+    ];
+    this.radialMenu = new RadialMenu(data).init();
+  }
+
   renderItems() {
     const children = this.dataTree.descendants();
     // Remove the blank parent
     children.shift();
 
-    // Children
-    const node = this.zoomContainer
-      .append('svg:g')
-      .attr('stroke-linejoin', 'round')
-      .attr('stroke-width', 3)
+    if (!this.nodesContainer) {
+      this.nodesContainer = this.zoomContainer.append('svg:g').attr('class', 'nodes-container');
+    }
+
+    const nodes = this.nodesContainer
       .selectAll('g')
       .data(children)
-      .join('svg:g')
+      .join(
+        enter => enter.append('svg:g'),
+        update => update,
+      )
       .attr('class', 'node-item')
       .attr('transform', d => `translate(${d.y},${d.x})`);
 
     // Circles
-    node
+    // TODO: Better re-render
+    nodes.selectAll('circle').remove()
+    nodes
       .append('circle')
       .attr('fill', '#6c567b')
+      .attr('stroke-linejoin', 'round')
+      .attr('stroke-width', 6)
+      .attr('stroke', 'transparent')
       .attr('r', 6)
-      .on('mouseover', (data, i, nodes) => nodes[i].setAttribute('fill', '#dd5555'))
-      .on('mouseout', (data, i, nodes) => nodes[i].setAttribute('fill', '#000'))
+      .on('mouseover', (item, i, node) => this.onNodeCircleOver(item, i, node))
+      .on('mouseout', (item, i, node) => this.onNodeCircleOut(item, i, node))
       .on('click', (_, i, nodes) => this.onItemClick(nodes[i]));
 
-    node
+    // TODO: Better re-render
+    nodes.selectAll('text').remove()
+    nodes
       .append('text')
       .attr('font-size', '14px')
       .attr('dy', '0.31em')
       .attr('x', d => (d.children ? -6 : 6))
       .attr('text-anchor', d => (d.children ? 'end' : 'start'))
-      .clone(true)
       .attr('fill', 'black');
   }
 
   renderLines() {
-    // Lines
-    const link = this.zoomContainer
-      .append('svg:g')
+    if (!this.linksContainer) {
+      this.linksContainer = this.zoomContainer.append('svg:g').attr('class', 'links-container');
+    }
+
+    this.linksContainer
+      .selectAll('path')
+      .data(this.dataTree.links())
+      .join(
+        enter => enter.append('path'),
+        update => update,
+      )
       .attr('fill', 'none')
       .attr('stroke', '#f67280')
       .attr('stroke-width', 3)
-      .selectAll('path')
-      .data(this.dataTree.links())
-      .join('path')
       .style('opacity', function(d, i) {
         return !d.source.depth ? 0 : 1;
       })

@@ -2,8 +2,6 @@ import { create, select } from 'd3';
 import { interpolate } from 'd3-interpolate';
 import { pie as d3Pie, arc as d3Arc } from 'd3-shape';
 
-import trashSVG from '../../../assets/trash.svg';
-
 export default class RadialMenu {
   constructor(data) {
     this.data = data;
@@ -11,20 +9,11 @@ export default class RadialMenu {
     this.currentParent = null;
   }
 
-  move(node) {
-    if (this.currentParent) {
-      this.currentParent.querySelector('.menu-container').remove();
-    }
-
-    this.currentParent = node.parentNode;
-    this.currentParent.appendChild(this.menuContainer.node());
-  }
-
   init() {
     var self = this;
-    var padding = 1;
-    var iconSize = 16;
-    var offsetAngleDeg = -180 / this.data.length; // Initial rotation angle designed to put centre the first segment at the top
+    var padding = 2;
+    var iconSize = 24;
+    var offsetAngleDeg = -180 / this.data.length;
 
     this.menuContainer = create('svg:g')
       .attr('width', 500)
@@ -46,8 +35,7 @@ export default class RadialMenu {
       .selectAll('.arc')
       .data(pie(this.data))
       .enter()
-      .append('svg:g')
-      .attr('class', 'arc');
+      .append('svg:g');
 
     arc
       .append('path')
@@ -59,8 +47,7 @@ export default class RadialMenu {
 
     arc
       .append('svg:g')
-      .html(trashSVG)
-      .attr('class', 'menu-icon')
+      .html(d => d.data.icon)
       .attr('transform', function(d) {
         var x = self.calcMidPoint(d).x - iconSize / 2;
         var y = self.calcMidPoint(d).y - iconSize / 2;
@@ -71,7 +58,26 @@ export default class RadialMenu {
     return this;
   }
 
-  // private
+  remove() {
+    if (this.currentParent) {
+      this.currentParent.querySelector('.menu-container').remove();
+      this.currentParent = null
+    }
+  }
+
+  selectNode(node) {
+    if (this.currentParent) {
+      this.currentParent.querySelector('.menu-container').remove();
+
+      // Hide if already open for node
+      if (node.parentElement === this.currentParent) return (this.currentParent = null);
+    }
+
+    this.currentParent = node.parentNode;
+    this.currentParent.appendChild(this.menuContainer.node());
+  }
+
+    // private
 
   calcMidPoint(d) {
     var angle = d.startAngle + (d.endAngle - d.startAngle) / 2;
