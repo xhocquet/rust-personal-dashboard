@@ -7,27 +7,31 @@ import { event as d3Event, create as d3Create } from 'd3';
 
 import RadialMenu from './radial_menu';
 
+import trashSVG from '../../../assets/trash.svg';
+
 export default class Tree {
   constructor(selector, treeData = null) {
     this.selector = selector;
     this.treeData = treeData;
     this.width = 954;
     this.height = 600;
+
     // Menu
     const data = [
-      { icon: 'https://github.com/favicon.ico', action: 'segment 1' },
-      { icon: 'https://github.com/favicon.ico', action: 'segment 2' },
-      { icon: 'https://github.com/favicon.ico', action: 'segment 3' },
-      { icon: 'https://github.com/favicon.ico', action: 'segment 4' },
-      { icon: 'https://github.com/favicon.ico', action: 'segment 4' },
-      { icon: 'https://github.com/favicon.ico', action: 'segment 4' },
+      { icon: trashSVG, action: 'segment 1', function: this.deleteNode },
+      { icon: trashSVG, action: 'segment 1', function: this.deleteNode },
+      { icon: trashSVG, action: 'segment 1', function: this.deleteNode },
     ];
-
-    this.radialMenu = new RadialMenu(data);
+    this.radialMenu = new RadialMenu(data).init();
   }
 
   onItemClick(node) {
-    this.radialMenu.init(node);
+    this.radialMenu.move(node);
+  }
+
+  deleteNode(node) {
+    const itemId = select(node).datum().data.id
+    alert(`deleting item ${itemId}`)
   }
 
   setupTree() {
@@ -84,22 +88,17 @@ export default class Tree {
       .selectAll('g')
       .data(children)
       .join('svg:g')
+      .attr('class', 'node-item')
       .attr('transform', d => `translate(${d.y},${d.x})`);
 
     // Circles
     node
       .append('circle')
       .attr('fill', '#6c567b')
-      .attr('r', 4)
+      .attr('r', 6)
       .on('mouseover', (data, i, nodes) => nodes[i].setAttribute('fill', '#dd5555'))
       .on('mouseout', (data, i, nodes) => nodes[i].setAttribute('fill', '#000'))
       .on('click', (_, i, nodes) => this.onItemClick(nodes[i]));
-
-    // Main menu circle
-    // .attr('transform', "translate(-10,-25) scale(.8)")
-    // .on('mouseover', (data, i, nodes) => nodes[i].setAttribute('fill', '#dd5555'))
-    // .on('mouseout', (data, i, nodes) => nodes[i].setAttribute('fill', '#000'))
-    // .on('click', this.onAddClick)
 
     node
       .append('text')

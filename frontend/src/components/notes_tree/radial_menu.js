@@ -2,6 +2,8 @@ import { create, select } from 'd3';
 import { interpolate } from 'd3-interpolate';
 import { pie as d3Pie, arc as d3Arc } from 'd3-shape';
 
+import trashSVG from '../../../assets/trash.svg';
+
 export default class RadialMenu {
   constructor(data) {
     this.data = data;
@@ -10,22 +12,19 @@ export default class RadialMenu {
   }
 
   move(node) {
-    this.currentParent.querySelector('.menu-container').remove();
+    if (this.currentParent) {
+      this.currentParent.querySelector('.menu-container').remove();
+    }
+
     this.currentParent = node.parentNode;
     this.currentParent.appendChild(this.menuContainer.node());
   }
 
-  init(node) {
+  init() {
     var self = this;
     var padding = 1;
     var iconSize = 16;
-
     var offsetAngleDeg = -180 / this.data.length; // Initial rotation angle designed to put centre the first segment at the top
-
-    if (this.currentParent) {
-      this.move(node);
-      return;
-    }
 
     this.menuContainer = create('svg:g')
       .attr('width', 500)
@@ -54,31 +53,22 @@ export default class RadialMenu {
       .append('path')
       .attr('d', path)
       .attr('fill', '#8ac6d1')
-      .on('mouseover', (data, i, nodes) => nodes[i].setAttribute('fill', '#bbded6'))
-      .on('mouseout', (data, i, nodes) => nodes[i].setAttribute('fill', '#8ac6d1'));
+      .on('mouseover', (_, i, nodes) => nodes[i].setAttribute('fill', '#bbded6'))
+      .on('mouseout', (_, i, nodes) => nodes[i].setAttribute('fill', '#8ac6d1'))
+      .on('click', (item, i, nodes) => item.data.function(self.currentParent));
 
     arc
-      .append('image')
+      .append('svg:g')
+      .html(trashSVG)
       .attr('class', 'menu-icon')
-      .attr('xlink:href', function(d) {
-        return d.data.icon;
-      })
-      .attr('width', iconSize)
-      .attr('height', iconSize)
-      .attr('x', function(d) {
-        return self.calcMidPoint(d).x - iconSize / 2;
-      })
-      .attr('y', function(d) {
-        return self.calcMidPoint(d).y - iconSize / 2;
-      })
       .attr('transform', function(d) {
-        var mp = self.calcMidPoint(d);
-        return 'rotate(0,' + mp.x + ',' + mp.y + ')';
+        var x = self.calcMidPoint(d).x - iconSize / 2;
+        var y = self.calcMidPoint(d).y - iconSize / 2;
+        return `translate(${x},${y})`;
       })
       .attr('pointer-events', 'none');
 
-    this.currentParent = node.parentNode;
-    this.currentParent.appendChild(this.menuContainer.node());
+    return this;
   }
 
   // private
