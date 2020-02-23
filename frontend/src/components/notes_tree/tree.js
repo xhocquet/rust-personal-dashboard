@@ -5,7 +5,7 @@ import { linkHorizontal } from 'd3-shape';
 import { zoomIdentity, zoomTransform, zoom as d3Zoom } from 'd3-zoom';
 import { event as d3Event, create as d3Create } from 'd3';
 
-import plusCircleSVG from '../../../assets/plus-circle.svg';
+import RadialMenu from './radial_menu';
 
 export default class Tree {
   constructor(selector, treeData = null) {
@@ -13,24 +13,38 @@ export default class Tree {
     this.treeData = treeData;
     this.width = 954;
     this.height = 600;
+    // Menu
+    const data = [
+      { icon: 'https://github.com/favicon.ico', action: 'segment 1' },
+      { icon: 'https://github.com/favicon.ico', action: 'segment 2' },
+      { icon: 'https://github.com/favicon.ico', action: 'segment 3' },
+      { icon: 'https://github.com/favicon.ico', action: 'segment 4' },
+      { icon: 'https://github.com/favicon.ico', action: 'segment 4' },
+      { icon: 'https://github.com/favicon.ico', action: 'segment 4' },
+    ];
+
+    this.radialMenu = new RadialMenu(data);
+  }
+
+  onItemClick(node) {
+    this.radialMenu.init(node);
   }
 
   setupTree() {
     this.setupDataTree();
     this.setupZoomContainer();
-    this.renderItems();
     this.renderLines();
+    this.renderItems();
   }
 
   setupDataTree() {
-    const treeDataWithParent = [{id: 0}, ...this.treeData]
+    const treeDataWithParent = [{ id: 0 }, ...this.treeData];
     const data = stratify()
       .id(d => d.id)
       .parentId(d => {
         if (d.id === 0) return null;
         return d.note_id || 0;
-      })
-      (treeDataWithParent);
+      })(treeDataWithParent);
     data.dx = 80;
     data.dy = this.width / (data.height + 1);
     this.dataTree = d3Tree().nodeSize([data.dx, data.dy])(data);
@@ -48,7 +62,7 @@ export default class Tree {
 
     // Zoom container
     this.zoomContainer = svg
-      .append('g')
+      .append('svg:g')
       .attr('font-family', 'sans-serif')
       .attr('font-size', 10);
 
@@ -64,12 +78,12 @@ export default class Tree {
 
     // Children
     const node = this.zoomContainer
-      .append('g')
+      .append('svg:g')
       .attr('stroke-linejoin', 'round')
       .attr('stroke-width', 3)
       .selectAll('g')
       .data(children)
-      .join('g')
+      .join('svg:g')
       .attr('transform', d => `translate(${d.y},${d.x})`);
 
     // Circles
@@ -78,14 +92,14 @@ export default class Tree {
       .attr('fill', '#6c567b')
       .attr('r', 4)
       .on('mouseover', (data, i, nodes) => nodes[i].setAttribute('fill', '#dd5555'))
-      .on('mouseout', (data, i, nodes) => nodes[i].setAttribute('fill', '#000'));
-
-    // Add-button
-    node.append('g').html(plusCircleSVG)
-      .attr('transform', "translate(10,-10)")
-      .on('mouseover', (data, i, nodes) => nodes[i].setAttribute('fill', '#dd5555'))
       .on('mouseout', (data, i, nodes) => nodes[i].setAttribute('fill', '#000'))
+      .on('click', (_, i, nodes) => this.onItemClick(nodes[i]));
 
+    // Main menu circle
+    // .attr('transform', "translate(-10,-25) scale(.8)")
+    // .on('mouseover', (data, i, nodes) => nodes[i].setAttribute('fill', '#dd5555'))
+    // .on('mouseout', (data, i, nodes) => nodes[i].setAttribute('fill', '#000'))
+    // .on('click', this.onAddClick)
 
     node
       .append('text')
@@ -100,7 +114,7 @@ export default class Tree {
   renderLines() {
     // Lines
     const link = this.zoomContainer
-      .append('g')
+      .append('svg:g')
       .attr('fill', 'none')
       .attr('stroke', '#f67280')
       .attr('stroke-width', 3)
