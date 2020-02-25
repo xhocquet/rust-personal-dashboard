@@ -11,9 +11,10 @@ import trashSVG from '../../../assets/trash.svg';
 import plusSVG from '../../../assets/plus.svg';
 
 export default class Tree {
-  constructor(selector, createNode) {
+  constructor(selector, createNode, deleteNode) {
     this.selector = selector;
     this.createNode = createNode;
+    this.propsDeleteNode = deleteNode;
     this.dataTree = null;
     this.zoomContainer = null;
     this.radialMenu = null;
@@ -55,7 +56,7 @@ export default class Tree {
 
   deleteNode(node) {
     const itemId = select(node).datum().data.id;
-    alert(`deleting item ${itemId}`);
+    this.propsDeleteNode(itemId);
   }
 
   setupDataTree(rawData) {

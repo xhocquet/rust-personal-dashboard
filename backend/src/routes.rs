@@ -1,41 +1,39 @@
 pub mod api {
-  use diesel::{self, prelude::*};
   use rocket_contrib::json::Json;
-
+  use crate::db;
   use crate::models::{InsertableNote, Note};
-  use crate::schema;
-  use crate::DbConn;
 
+  // index
   #[get("/api/v1/notes")]
-  pub fn notes_index(conn: DbConn) -> Result<Json<Vec<Note>>, String> {
-    use crate::schema::notes::dsl::*;
-
-    notes.load(&conn.0).map_err(|err| -> String {
-      println!("Error querying page views: {:?}", err);
-      "Error querying page views from the database".into()
-    }).map(Json)
+  pub fn notes_index(conn: db::Connection) -> Result<Json<Vec<Note>>, String> {
+    Note::read(&conn)
   }
 
-
+  // create
   #[post("/api/v1/notes", data = "<note>")]
   pub fn notes_create(
-    conn: DbConn,
+    conn: db::Connection,
     note: Json<InsertableNote>,
   ) ->  Result<Json<Vec<Note>>, String> {
-    use crate::schema::notes::dsl::*;
+    let insert = InsertableNote { ..note.into_inner() };
+    Note::create(insert, &conn)
+  }
 
-    diesel::insert_into(schema::notes::table)
-      .values(&note.0)
-      .execute(&conn.0)
-      .map_err(|err| -> String {
-        println!("Error inserting row: {:?}", err);
-        "Error inserting row into database".into()
-      })?;
+  // update
+  #[put("/api/v1/notes/<id>", data = "<note>")]
+  pub fn notes_update(
+    id: i32,
+    note: Json<InsertableNote>,
+    conn: db::Connection,
+  ) -> Result<Json<Vec<Note>>, String> {
+    let update = InsertableNote { ..note.into_inner() };
+    Note::update(id, update, &conn)
+  }
 
-    notes.load(&conn.0).map_err(|err| -> String {
-      println!("Error querying page views: {:?}", err);
-      "Error querying page views from the database".into()
-    }).map(Json)
+  // delete
+  #[delete("/api/v1/notes/<id>")]
+  pub fn notes_delete(id: i32, conn: db::Connection) -> Result<Json<Vec<Note>>, String> {
+    Note::delete(id, &conn)
   }
 }
 

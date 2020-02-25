@@ -5,7 +5,6 @@ extern crate chrono;
 extern crate diesel;
 #[macro_use]
 extern crate rocket;
-#[macro_use]
 extern crate rocket_contrib;
 extern crate serde;
 extern crate serde_json;
@@ -13,15 +12,13 @@ extern crate serde_json;
 extern crate serde_derive;
 
 pub mod models;
+pub mod db;
 pub mod routes;
 pub mod schema;
 pub mod cors;
 
 use rocket_contrib::templates::Template;
 use rocket_contrib::serve::StaticFiles;
-
-#[database("personal_dashboard")]
-pub struct DbConn(diesel::PgConnection);
 
 fn main() {
     rocket::ignite()
@@ -30,9 +27,11 @@ fn main() {
         routes::favicon,
         routes::api::notes_index,
         routes::api::notes_create,
+        routes::api::notes_update,
+        routes::api::notes_delete,
       ])
       .mount("/static", StaticFiles::from("static"))
-      .attach(DbConn::fairing())
+      .manage(db::connect())
       .attach(cors::CorsFairing)
       .attach(Template::fairing())
       .launch();

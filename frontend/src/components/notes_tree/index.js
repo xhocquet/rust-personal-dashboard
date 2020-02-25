@@ -18,7 +18,7 @@ export default class NotesTree extends Component {
     fetch(URL)
       .then(res => res.json())
       .then(res => {
-        const tree = new Tree('svg-container', self.createNode.bind(self))
+        const tree = new Tree('svg-container', self.createNode.bind(self), self.deleteNode.bind(self))
         tree.setupTree(res);
         this.setState({ notes: res, timestamp: Date.now(), tree: tree });
       });
@@ -39,6 +39,16 @@ export default class NotesTree extends Component {
     fetch(URL, {
       method: 'post',
       body: JSON.stringify(payload),
+    })
+      .then(res => res.json())
+      .then(res => {
+        this.setState({ notes: res, timestamp: Date.now() });
+      });
+  }
+
+  deleteNode(id) {
+    fetch(`${URL}/${id}`, {
+      method: 'delete'
     })
       .then(res => res.json())
       .then(res => {
